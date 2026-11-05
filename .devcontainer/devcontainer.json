@@ -1,0 +1,6 @@
+{
+  "forwardPorts": [5000],
+  "portsAttributes": {
+    "5000": { "protocol": "http", "label": "Agenda" }
+  }
+}

@@ -1,0 +1,116 @@
+:root {
+  --azul: #1d4ed8;
+  --azul-escuro: #1e3a8a;
+  --cinza: #64748b;
+  --borda: #e2e8f0;
+  --fundo: #f8fafc;
+  --verde: #15803d;
+  --vermelho: #b91c1c;
+  --amarelo: #a16207;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--fundo);
+  color: #0f172a;
+}
+
+.topo {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 24px;
+  background: var(--azul-escuro);
+  color: #fff;
+  flex-wrap: wrap;
+}
+.topo nav { display: flex; gap: 16px; flex: 1; flex-wrap: wrap; }
+.topo a { color: #cbd5e1; text-decoration: none; padding: 4px 0; }
+.topo a.router-link-exact-active { color: #fff; border-bottom: 2px solid #fff; }
+.topo .usuario { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.marca { font-size: 18px; }
+
+.conteudo { max-width: 960px; margin: 0 auto; padding: 24px; }
+
+h1 { font-size: 22px; margin: 0 0 16px; }
+h2 { font-size: 16px; margin: 0 0 8px; }
+
+.cartao {
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+label { display: block; font-size: 14px; margin-bottom: 12px; }
+label > span { display: block; margin-bottom: 4px; color: var(--cinza); }
+
+input, select, textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font: inherit;
+  background: #fff;
+}
+
+button {
+  font: inherit;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: var(--azul);
+  color: #fff;
+  cursor: pointer;
+}
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+button.sec { background: #fff; color: #0f172a; border-color: #cbd5e1; }
+button.perigo { background: var(--vermelho); }
+button.ok { background: var(--verde); }
+button.link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  text-decoration: underline;
+}
+
+.linha { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+.linha > * { flex: 1; min-width: 160px; }
+.linha > button { flex: 0 0 auto; min-width: 0; }
+
+.erro { color: var(--vermelho); font-size: 14px; margin: 8px 0; }
+.sucesso { color: var(--verde); font-size: 14px; margin: 8px 0; }
+.aviso { color: var(--amarelo); font-size: 14px; margin: 8px 0; }
+.vazio { color: var(--cinza); font-size: 14px; }
+.pequeno { font-size: 13px; color: var(--cinza); }
+
+.selo {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #e2e8f0;
+}
+.selo.pendente { background: #fef3c7; color: var(--amarelo); }
+.selo.aprovada { background: #dcfce7; color: var(--verde); }
+.selo.em_uso { background: #dbeafe; color: var(--azul); }
+.selo.recusada, .selo.cancelada { background: #fee2e2; color: var(--vermelho); }
+
+.cabeca-reserva { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.acoes { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+.acoes input { width: 160px; }
+
+.dia { border-top: 1px solid var(--borda); padding: 10px 0; }
+.dia h2 { text-transform: capitalize; }
+.item-dia { font-size: 14px; padding: 4px 0; }
+
+.abas { display: flex; gap: 8px; margin-bottom: 16px; }
+.abas button { background: #fff; color: #0f172a; border-color: #cbd5e1; }
+.abas button.ativa { background: var(--azul); color: #fff; border-color: var(--azul); }
+
+.login { max-width: 360px; margin: 80px auto; }

@@ -1,9 +1,10 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { api } from '../api'
 import { fmtDataHora, localParaIso } from '../formatar'
 
+const route = useRoute()
 const router = useRouter()
 const veiculos = ref([])
 const form = ref({ veiculo: '', inicio: '', fim: '', destino: '', passageiros: 1 })
@@ -56,6 +57,11 @@ async function enviar() {
 }
 
 onMounted(async () => {
+  const dia = route.query.data
+  if (typeof dia === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dia)) {
+    form.value.inicio = `${dia}T08:00`
+    form.value.fim = `${dia}T17:00`
+  }
   try {
     veiculos.value = await api('/veiculos/')
     if (veiculos.value.length) form.value.veiculo = String(veiculos.value[0].id)
@@ -68,9 +74,12 @@ watch(() => [form.value.veiculo, form.value.inicio, form.value.fim], verificarCo
 </script>
 
 <template>
-  <h1>Nova reserva</h1>
+  <div class="cabeca-pagina">
+    <h1>Nova reserva</h1>
+    <p>Preencha os dados para solicitar um veículo.</p>
+  </div>
 
-  <div class="cartao">
+  <div class="cartao" style="max-width: 640px">
     <label>
       <span>Veículo</span>
       <select v-model="form.veiculo">

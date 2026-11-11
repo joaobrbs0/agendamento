@@ -1,5 +1,6 @@
 <script setup>
 import { ref, reactive, watch, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { api } from '../api'
 import { ROTULO_STATUS, fmtDataHora } from '../formatar'
 
@@ -9,7 +10,8 @@ const ABAS = [
   { chave: 'em_uso', titulo: 'Em uso' },
 ]
 
-const aba = ref('pendente')
+const route = useRoute()
+const aba = ref(ABAS.some((a) => a.chave === route.query.aba) ? route.query.aba : 'pendente')
 const reservas = ref([])
 const erro = ref('')
 const carregando = ref(false)
@@ -55,7 +57,10 @@ onMounted(carregar)
 </script>
 
 <template>
-  <h1>Gestão de reservas</h1>
+  <div class="cabeca-pagina">
+    <h1>Gestão de reservas</h1>
+    <p>Aprove, recuse e acompanhe retiradas e devoluções.</p>
+  </div>
 
   <div class="abas">
     <button
@@ -72,6 +77,7 @@ onMounted(carregar)
   <p v-if="carregando" class="pequeno">Carregando…</p>
   <p v-else-if="!reservas.length" class="vazio">Nada por aqui.</p>
 
+  <div class="grade-cartoes">
   <div v-for="r in reservas" :key="r.id" class="cartao">
     <div class="cabeca-reserva">
       <strong>{{ r.veiculo_nome }}</strong>
@@ -98,5 +104,6 @@ onMounted(carregar)
       <input v-model="kms[r.id]" type="number" min="0" placeholder="Km de retorno" />
       <button :disabled="!kmValido(r)" @click="devolver(r)">Registrar devolução</button>
     </div>
+  </div>
   </div>
 </template>

@@ -6,23 +6,38 @@ import LoginView from './views/LoginView.vue'
 import CalendarioView from './views/CalendarioView.vue'
 import NovaReservaView from './views/NovaReservaView.vue'
 import MinhasView from './views/MinhasView.vue'
+import PainelView from './views/PainelView.vue'
 import GestaoView from './views/GestaoView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/login', name: 'login', component: LoginView, meta: { publica: true } },
-    { path: '/', name: 'calendario', component: CalendarioView },
-    { path: '/nova', name: 'nova', component: NovaReservaView },
-    { path: '/minhas', name: 'minhas', component: MinhasView },
-    { path: '/gestao', name: 'gestao', component: GestaoView, meta: { gestor: true } },
+
+    // Acesso do usuário
+    { path: '/', name: 'calendario', component: CalendarioView, meta: { area: 'usuario' } },
+    { path: '/nova', name: 'nova', component: NovaReservaView, meta: { area: 'usuario' } },
+    { path: '/minhas', name: 'minhas', component: MinhasView, meta: { area: 'usuario' } },
+
+    // Acesso do administrador (gestor)
+    { path: '/admin', name: 'painel', component: PainelView, meta: { area: 'admin' } },
+    { path: '/admin/calendario', name: 'admin-calendario', component: CalendarioView, meta: { area: 'admin' } },
+    { path: '/admin/gestao', name: 'gestao', component: GestaoView, meta: { area: 'admin' } },
+
     { path: '/:resto(.*)*', redirect: '/' },
   ],
 })
 
 router.beforeEach(async (to) => {
   if (to.meta.publica) {
-    if (tokens.acesso && to.name === 'login') return { name: 'calendario' }
+    if (tokens.acesso && to.name === 'login') {
+      try {
+        if (!sessao.usuario) await carregarEu()
+        return { name: sessao.usuario.gestor ? 'painel' : 'calendario' }
+      } catch {
+        sair()
+      }
+    }
     return true
   }
   if (!tokens.acesso) return { name: 'login' }
@@ -34,7 +49,7 @@ router.beforeEach(async (to) => {
       return { name: 'login' }
     }
   }
-  if (to.meta.gestor && !sessao.usuario.gestor) return { name: 'calendario' }
+  if (to.meta.area === 'admin' && !sessao.usuario.gestor) return { name: 'calendario' }
   return true
 })
 

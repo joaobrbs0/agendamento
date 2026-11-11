@@ -43,3 +43,17 @@ export function somarDias(data, n) {
 
 // Valor de <input type="datetime-local"> -> ISO em UTC para a API.
 export const localParaIso = (valor) => new Date(valor).toISOString()
+
+export const primeiroDoMes = (d) => new Date(d.getFullYear(), d.getMonth(), 1)
+
+export const chaveDia = (d) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
+const mesAno = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' })
+export function fmtMesAno(d) {
+  const t = mesAno.format(d)
+  return t.charAt(0).toUpperCase() + t.slice(1)
+}
+
+const diaLongo = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
+export const fmtDiaLongo = (d) => diaLongo.format(d)

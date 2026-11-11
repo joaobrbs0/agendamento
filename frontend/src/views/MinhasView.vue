@@ -35,11 +35,15 @@ onMounted(carregar)
 </script>
 
 <template>
-  <h1>Minhas reservas</h1>
+  <div class="cabeca-pagina">
+    <h1>Minhas reservas</h1>
+    <p>Acompanhe o status dos seus pedidos.</p>
+  </div>
   <p v-if="erro" class="erro">{{ erro }}</p>
   <p v-if="carregando" class="pequeno">Carregando…</p>
   <p v-else-if="!reservas.length" class="vazio">Você ainda não fez nenhuma reserva.</p>
 
+  <div class="grade-cartoes">
   <div v-for="r in reservas" :key="r.id" class="cartao">
     <div class="cabeca-reserva">
       <strong>{{ r.veiculo_nome }}</strong>
@@ -54,5 +58,6 @@ onMounted(carregar)
     <div v-if="podeCancelar(r)" class="acoes">
       <button class="sec" @click="cancelar(r)">Cancelar reserva</button>
     </div>
+  </div>
   </div>
 </template>

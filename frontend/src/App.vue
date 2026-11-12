@@ -16,6 +16,7 @@ const itens = computed(() => admin.value
       { para: '/admin', icone: 'painel', texto: 'Painel' },
       { para: '/admin/calendario', icone: 'calendario', texto: 'Calendário' },
       { para: '/admin/gestao', icone: 'gestao', texto: 'Gestão de reservas' },
+      { para: '/admin/veiculos', icone: 'carro', texto: 'Veículos' },
     ]
   : [
       { para: '/', icone: 'calendario', texto: 'Calendário' },

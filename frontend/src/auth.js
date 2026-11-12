@@ -1,20 +1,18 @@
 import { reactive } from 'vue'
-import { api, tokens, ErroApi } from './api'
+import { api, tokens } from './api'
 
 export const sessao = reactive({ usuario: null })
 
-export async function entrar(usuario, senha) {
+export async function entrarComGoogle(credencial) {
   try {
-    const d = await api('/login/', {
+    const d = await api('/login/google/', {
       metodo: 'POST',
-      corpo: { username: usuario, password: senha },
+      corpo: { credential: credencial },
       semRenovar: true,
     })
     tokens.salvar(d.access, d.refresh)
   } catch (e) {
-    if (e instanceof ErroApi && e.status === 401) {
-      throw new ErroApi('Usuário ou senha incorretos.', 401)
-    }
+    sair()
     throw e
   }
   await carregarEu()

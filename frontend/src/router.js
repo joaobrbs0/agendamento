@@ -8,6 +8,7 @@ import NovaReservaView from './views/NovaReservaView.vue'
 import MinhasView from './views/MinhasView.vue'
 import PainelView from './views/PainelView.vue'
 import GestaoView from './views/GestaoView.vue'
+import VeiculosView from './views/veiculosview.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -23,6 +24,7 @@ const router = createRouter({
     { path: '/admin', name: 'painel', component: PainelView, meta: { area: 'admin' } },
     { path: '/admin/calendario', name: 'admin-calendario', component: CalendarioView, meta: { area: 'admin' } },
     { path: '/admin/gestao', name: 'gestao', component: GestaoView, meta: { area: 'admin' } },
+    { path: '/admin/veiculos', name: 'veiculos', component: VeiculosView, meta: { area: 'admin' } },
 
     { path: '/:resto(.*)*', redirect: '/' },
   ],

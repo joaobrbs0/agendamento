@@ -1,27 +1,26 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { entrar } from '../auth'
-import { sessao, sair } from '../auth'
+import { entrarComGoogle, sessao, sair } from '../auth'
 import Icone from '../components/Icone.vue'
 
 const router = useRouter()
 const modo = ref('usuario')
-const usuario = ref('')
-const senha = ref('')
 const erro = ref('')
 const enviando = ref(false)
+const botaoGoogle = ref(null)
+const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
 function trocar(m) {
   modo.value = m
   erro.value = ''
 }
 
-async function enviar() {
+async function aoReceberGoogle(resposta) {
   erro.value = ''
   enviando.value = true
   try {
-    await entrar(usuario.value.trim(), senha.value)
+    await entrarComGoogle(resposta.credential)
     if (modo.value === 'admin') {
       if (!sessao.usuario.gestor) {
         sair()
@@ -38,6 +37,23 @@ async function enviar() {
     enviando.value = false
   }
 }
+
+// O script do Google carrega de forma assíncrona; espera ele ficar disponível.
+function iniciarGoogle(tentativas = 0) {
+  if (window.google?.accounts?.id) {
+    window.google.accounts.id.initialize({
+      client_id: CLIENT_ID,
+      callback: aoReceberGoogle,
+    })
+    window.google.accounts.id.renderButton(botaoGoogle.value, {
+      theme: 'outline', size: 'large', text: 'signin_with', locale: 'pt-BR', width: 320,
+    })
+  } else if (tentativas < 50) {
+    setTimeout(() => iniciarGoogle(tentativas + 1), 100)
+  }
+}
+
+onMounted(() => { if (CLIENT_ID) iniciarGoogle() })
 </script>
 
 <template>
@@ -67,18 +83,15 @@ async function enviar() {
         </div>
 
         <div class="cartao">
-          <label>
-            <span>Usuário</span>
-            <input v-model="usuario" autocomplete="username" autofocus @keyup.enter="enviar" />
-          </label>
-          <label>
-            <span>Senha</span>
-            <input v-model="senha" type="password" autocomplete="current-password" @keyup.enter="enviar" />
-          </label>
+          <template v-if="CLIENT_ID">
+            <p class="sub">
+              Entre com sua conta institucional do Google
+              para acessar como {{ modo === 'admin' ? 'administrador' : 'usuário' }}.
+            </p>
+            <div ref="botaoGoogle" class="google-botao" />
+          </template>
+          <p v-else class="erro">Login com Google não configurado (VITE_GOOGLE_CLIENT_ID).</p>
           <p v-if="erro" class="erro">{{ erro }}</p>
-          <button class="entrar" :disabled="enviando || !usuario || !senha" @click="enviar">
-            Entrar como {{ modo === 'admin' ? 'administrador' : 'usuário' }}
-          </button>
         </div>
       </div>
     </section>

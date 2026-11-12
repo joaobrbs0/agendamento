@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/6.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -157,3 +157,12 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
+
+
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
+GOOGLE_ALLOWED_DOMAINS = [
+    d.strip().lower()
+    for d in os.environ.get("GOOGLE_ALLOWED_DOMAINS", "").split(",")
+    if d.strip()
+]
+GOOGLE_CRIAR_USUARIOS = os.environ.get("GOOGLE_CRIAR_USUARIOS", "1") == "1"

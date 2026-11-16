@@ -10,18 +10,22 @@ const menuAberto = ref(false)
 
 const logado = computed(() => Boolean(sessao.usuario) && !route.meta.publica)
 const admin = computed(() => route.meta.area === 'admin')
+const paginaAtual = computed(() => {
+  const atual = [...itens.value].find((item) => item.para === route.path)
+  return atual?.texto || 'Área de trabalho'
+})
 
 const itens = computed(() => admin.value
   ? [
-      { para: '/admin', icone: 'painel', texto: 'Painel' },
-      { para: '/admin/calendario', icone: 'calendario', texto: 'Calendário' },
+      { para: '/admin', icone: 'painel', texto: 'Visão geral' },
+      { para: '/admin/calendario', icone: 'calendario', texto: 'Calendário da frota' },
       { para: '/admin/gestao', icone: 'gestao', texto: 'Gestão de reservas' },
-      { para: '/admin/veiculos', icone: 'carro', texto: 'Veículos' },
+      { para: '/admin/veiculos', icone: 'carro', texto: 'Cadastro de veículos' },
     ]
   : [
       { para: '/', icone: 'calendario', texto: 'Calendário' },
-      { para: '/nova', icone: 'nova', texto: 'Nova reserva' },
-      { para: '/minhas', icone: 'minhas', texto: 'Minhas reservas' },
+      { para: '/nova', icone: 'nova', texto: 'Solicitar veículo' },
+      { para: '/minhas', icone: 'minhas', texto: 'Minhas solicitações' },
     ])
 
 watch(() => route.fullPath, () => { menuAberto.value = false })
@@ -42,13 +46,14 @@ function deslogar() {
         <span class="brasao"><Icone nome="escudo" /></span>
         <span class="marca-texto">
           <strong>Prefeitura de Joinville</strong>
-          <small>Reserva de Veículos</small>
+          <small>Secretaria de Educação · Gestão de Transporte</small>
         </span>
       </div>
+      <div class="topo-contexto">SISTEMA DE GESTÃO DE VEÍCULOS</div>
       <div class="usuario">
         <span class="quem">
           {{ sessao.usuario.nome }}
-          <small>{{ admin ? 'Administrador' : 'Usuário' }}</small>
+          <small>{{ admin ? 'GESTÃO ADMINISTRATIVA' : 'ÁREA DO SOLICITANTE' }}</small>
         </span>
         <span class="avatar"><Icone nome="usuario" /></span>
       </div>
@@ -57,25 +62,35 @@ function deslogar() {
     <div :class="['fundo-menu', { aberta: menuAberto }]" @click="menuAberto = false" />
 
     <aside :class="['lateral', { aberta: menuAberto }]">
-      <div class="titulo">
-        {{ admin ? 'Painel administrativo' : 'Minha área' }}
-        <small>{{ admin ? 'Gestão da frota' : 'Reservas de veículos' }}</small>
+      <div class="lateral-identificacao">
+        <span class="lateral-sobretitulo">AMBIENTE DE TRABALHO</span>
+        <strong>{{ admin ? 'Administração' : 'Solicitações' }}</strong>
+        <small>{{ admin ? 'Controle operacional da frota' : 'Acesso aos serviços de transporte' }}</small>
       </div>
+      <div class="nav-titulo">MENU PRINCIPAL</div>
       <nav>
-        <RouterLink v-for="i in itens" :key="i.para" :to="i.para">
-          <Icone :nome="i.icone" /> {{ i.texto }}
+        <RouterLink v-for="i in itens" :key="i.para" :to="i.para" :exact-active-class="'router-link-exact-active'">
+          <Icone :nome="i.icone" /> <span>{{ i.texto }}</span>
         </RouterLink>
       </nav>
       <div class="rodape">
+        <div class="rodape-unidade">
+          <span class="unidade-indicador" />
+          <span><strong>Secretaria de Educação</strong><small>Prefeitura de Joinville</small></span>
+        </div>
         <RouterLink v-if="sessao.usuario.gestor" :to="admin ? '/' : '/admin'">
-          <Icone nome="troca" /> {{ admin ? 'Ir para a área do usuário' : 'Ir para o painel admin' }}
+          <Icone nome="troca" /> {{ admin ? 'Acessar área do usuário' : 'Acessar administração' }}
         </RouterLink>
-        <button class="item" @click="deslogar"><Icone nome="sair" /> Sair</button>
+        <button class="item" @click="deslogar"><Icone nome="sair" /> Encerrar sessão</button>
       </div>
     </aside>
 
     <main class="conteudo">
+      <div class="trilha-pagina">
+        <span>Secretaria de Educação</span><span class="trilha-separador">/</span><strong>{{ paginaAtual }}</strong>
+      </div>
       <RouterView :key="route.fullPath" />
+      <footer class="rodape-conteudo">Sistema de Gestão de Veículos <span>·</span> Prefeitura de Joinville</footer>
     </main>
   </div>
 

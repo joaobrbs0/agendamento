@@ -21,39 +21,25 @@ async function verificarConflitos() {
   conflitos.value = []
   if (!form.value.veiculo || !periodoValido.value) return
   try {
-    conflitos.value = await api('/reservas/', {
-      params: {
-        veiculo: form.value.veiculo,
-        inicio: localParaIso(form.value.inicio),
-        fim: localParaIso(form.value.fim),
-        status: 'aprovada,em_uso',
-      },
-    })
-  } catch {
-    conflitos.value = []
-  }
+    conflitos.value = await api('/reservas/', { params: {
+      veiculo: form.value.veiculo, inicio: localParaIso(form.value.inicio),
+      fim: localParaIso(form.value.fim), status: 'aprovada,em_uso',
+    } })
+  } catch { conflitos.value = [] }
 }
 
 async function enviar() {
   erro.value = ''
   enviando.value = true
   try {
-    await api('/reservas/', {
-      metodo: 'POST',
-      corpo: {
-        veiculo: Number(form.value.veiculo),
-        inicio: localParaIso(form.value.inicio),
-        fim: localParaIso(form.value.fim),
-        destino: form.value.destino.trim(),
-        passageiros: Number(form.value.passageiros),
-      },
-    })
+    await api('/reservas/', { metodo: 'POST', corpo: {
+      veiculo: Number(form.value.veiculo), inicio: localParaIso(form.value.inicio),
+      fim: localParaIso(form.value.fim), destino: form.value.destino.trim(),
+      passageiros: Number(form.value.passageiros),
+    } })
     router.push({ name: 'minhas' })
-  } catch (e) {
-    erro.value = e.message
-  } finally {
-    enviando.value = false
-  }
+  } catch (e) { erro.value = e.message }
+  finally { enviando.value = false }
 }
 
 onMounted(async () => {
@@ -65,67 +51,75 @@ onMounted(async () => {
   try {
     veiculos.value = await api('/veiculos/')
     if (veiculos.value.length) form.value.veiculo = String(veiculos.value[0].id)
-  } catch (e) {
-    erro.value = e.message
-  }
+  } catch (e) { erro.value = e.message }
 })
-
 watch(() => [form.value.veiculo, form.value.inicio, form.value.fim], verificarConflitos)
 </script>
 
 <template>
-  <div class="cabeca-pagina">
-    <h1>Nova reserva</h1>
-    <p>Preencha os dados para solicitar um veículo.</p>
+  <div class="pagina-intro">
+    <div>
+      <div class="contexto">Solicitações de transporte</div>
+      <div class="cabeca-pagina">
+        <h1>Nova reserva</h1>
+        <p class="apoio">Informe os dados do deslocamento para encaminhar sua solicitação.</p>
+      </div>
+    </div>
   </div>
 
-  <div class="cartao" style="max-width: 640px">
-    <label>
-      <span>Veículo</span>
-      <select v-model="form.veiculo">
-        <option v-for="v in veiculos" :key="v.id" :value="String(v.id)">
-          {{ v.modelo }} ({{ v.placa }})
-        </option>
-      </select>
-    </label>
+  <section class="cartao form-reserva">
+    <div class="cartao-cabecalho">
+      <h2>Dados da solicitação</h2>
+      <p>Preencha as informações do veículo, período e finalidade do deslocamento.</p>
+    </div>
 
-    <div class="linha">
+    <div class="form-grid">
+      <label class="campo-largo">
+        <span>Veículo solicitado</span>
+        <select v-model="form.veiculo">
+          <option value="" disabled>Selecione um veículo</option>
+          <option v-for="v in veiculos" :key="v.id" :value="String(v.id)">
+            {{ v.modelo }} ({{ v.placa }})
+          </option>
+        </select>
+      </label>
+
       <label>
-        <span>Saída</span>
+        <span>Data e horário de saída</span>
         <input v-model="form.inicio" type="datetime-local" />
       </label>
       <label>
-        <span>Retorno</span>
+        <span>Data e horário de retorno</span>
         <input v-model="form.fim" type="datetime-local" />
+      </label>
+
+      <p v-if="form.inicio && form.fim && !periodoValido" class="erro campo-largo">
+        O retorno precisa ser posterior à saída.
+      </p>
+      <div v-if="conflitos.length" class="aviso campo-largo">
+        <strong>Atenção: conflito de agenda identificado.</strong>
+        <div v-for="c in conflitos" :key="c.id">
+          Reserva existente: {{ fmtDataHora(c.inicio) }} a {{ fmtDataHora(c.fim) }}.
+        </div>
+        A disponibilidade deverá ser considerada na análise do pedido.
+      </div>
+
+      <label class="campo-largo">
+        <span>Destino / finalidade do deslocamento</span>
+        <input v-model="form.destino" maxlength="200" placeholder="Informe o destino ou a finalidade" />
+      </label>
+      <label>
+        <span>Quantidade de passageiros</span>
+        <input v-model="form.passageiros" type="number" min="1" max="60" />
       </label>
     </div>
 
-    <p v-if="form.inicio && form.fim && !periodoValido" class="erro">
-      O retorno precisa ser depois da saída.
-    </p>
-    <p v-if="conflitos.length" class="aviso">
-      O veículo já tem reserva nesse período:
-      <span v-for="c in conflitos" :key="c.id">
-        {{ fmtDataHora(c.inicio) }} a {{ fmtDataHora(c.fim) }};
-      </span>
-      Seu pedido pode ser recusado.
-    </p>
-
-    <label>
-      <span>Destino</span>
-      <input v-model="form.destino" maxlength="200" />
-    </label>
-    <label>
-      <span>Passageiros</span>
-      <input v-model="form.passageiros" type="number" min="1" max="60" />
-    </label>
-
     <p v-if="erro" class="erro">{{ erro }}</p>
-    <button
-      :disabled="enviando || !form.veiculo || !periodoValido || !form.destino.trim()"
-      @click="enviar"
-    >
-      Solicitar reserva
-    </button>
-  </div>
+    <div class="form-acoes">
+      <button :disabled="enviando || !form.veiculo || !periodoValido || !form.destino.trim()" @click="enviar">
+        {{ enviando ? 'Enviando solicitação…' : 'Encaminhar solicitação' }}
+      </button>
+      <span class="nota">A solicitação será encaminhada para análise da gestão.</span>
+    </div>
+  </section>
 </template>

@@ -7,6 +7,8 @@ const form = reactive({ placa: '', modelo: '' })
 const erro = ref('')
 const sucesso = ref('')
 const enviando = ref(false)
+const excluindoId = ref(null)
+const manutencaoId = ref(null)
 
 async function carregar() {
   try { veiculos.value = await api('/veiculos/') }
@@ -24,6 +26,40 @@ async function cadastrar() {
     await carregar()
   } catch (e) { erro.value = e.message }
   finally { enviando.value = false }
+}
+async function excluir(v) {
+  if (!window.confirm(`Excluir o veículo ${v.modelo} (${v.placa})? Essa ação remove o veículo da frota.`)) return
+  erro.value = ''
+  sucesso.value = ''
+  excluindoId.value = v.id
+  try {
+    await api(`/veiculos/${v.id}/`, { metodo: 'DELETE' })
+    sucesso.value = `Veículo ${v.modelo} (${v.placa}) excluído.`
+    await carregar()
+  } catch (e) { erro.value = e.message }
+  finally { excluindoId.value = null }
+}
+async function alternarManutencao(v) {
+  let motivo = ''
+  if (!v.em_manutencao) {
+    motivo = window.prompt(`Enviar ${v.modelo} (${v.placa}) para manutenção.\nMotivo (opcional):`)
+    if (motivo === null) return
+  }
+  erro.value = ''
+  sucesso.value = ''
+  manutencaoId.value = v.id
+  try {
+    const r = await api(`/veiculos/${v.id}/manutencao/`, {
+      metodo: 'POST',
+      corpo: { em_manutencao: !v.em_manutencao, motivo },
+    })
+    sucesso.value = r.em_manutencao
+      ? `Veículo ${r.modelo} (${r.placa}) enviado para manutenção.`
+        + (r.reservas_afetadas ? ` Atenção: ${r.reservas_afetadas} reserva(s) pendente(s) ou aprovada(s) continuam registradas para ele; revise-as na Gestão de reservas.` : '')
+      : `Veículo ${r.modelo} (${r.placa}) liberado para reservas.`
+    await carregar()
+  } catch (e) { erro.value = e.message }
+  finally { manutencaoId.value = null }
 }
 onMounted(carregar)
 </script>
@@ -76,9 +112,22 @@ onMounted(carregar)
         <div class="frota-info">
           <strong>{{ v.modelo }}</strong>
           <small>Placa: {{ v.placa }}</small>
+          <small v-if="v.em_manutencao && v.motivo_manutencao">Motivo: {{ v.motivo_manutencao }}</small>
         </div>
-        <span class="frota-tag">Cadastrado</span>
+        <span :class="['frota-tag', { 'frota-tag-manutencao': v.em_manutencao }]">
+          {{ v.em_manutencao ? 'Em manutenção' : 'Disponível' }}
+        </span>
+        <button class="sec" :disabled="manutencaoId === v.id" @click="alternarManutencao(v)">
+          {{ manutencaoId === v.id ? 'Salvando…' : (v.em_manutencao ? 'Liberar veículo' : 'Enviar p/ manutenção') }}
+        </button>
+        <button class="perigo" :disabled="excluindoId === v.id" @click="excluir(v)">
+          {{ excluindoId === v.id ? 'Excluindo…' : 'Excluir' }}
+        </button>
       </article>
     </div>
   </section>
 </template>
+
+<style scoped>
+.frota-tag-manutencao { background: #fdf0d5; color: #8a5a00; }
+</style>

@@ -15,12 +15,10 @@ const router = createRouter({
   routes: [
     { path: '/login', name: 'login', component: LoginView, meta: { publica: true } },
 
-    // Acesso do usuário
     { path: '/', name: 'calendario', component: CalendarioView, meta: { area: 'usuario' } },
     { path: '/nova', name: 'nova', component: NovaReservaView, meta: { area: 'usuario' } },
     { path: '/minhas', name: 'minhas', component: MinhasView, meta: { area: 'usuario' } },
 
-    // Acesso do administrador (gestor)
     { path: '/admin', name: 'painel', component: PainelView, meta: { area: 'admin' } },
     { path: '/admin/calendario', name: 'admin-calendario', component: CalendarioView, meta: { area: 'admin' } },
     { path: '/admin/gestao', name: 'gestao', component: GestaoView, meta: { area: 'admin' } },

@@ -14,6 +14,8 @@ class Veiculo(models.Model):
     placa = models.CharField(max_length=8, unique=True)
     modelo = models.CharField(max_length=80)
     ativo = models.BooleanField(default=True)
+    em_manutencao = models.BooleanField(default=False)
+    motivo_manutencao = models.CharField(max_length=200, blank=True)
     google_calendar_id = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
@@ -70,6 +72,8 @@ class Reserva(models.Model):
             raise ValidationError("O fim precisa ser depois do início.")
         if p.lower < timezone.now():
             raise ValidationError("O início não pode estar no passado.")
+        if self.veiculo.em_manutencao:
+            raise ValidationError("Este veículo está em manutenção e não pode ser reservado.")
         conflito = Reserva.objects.filter(
             veiculo=self.veiculo, status__in=BLOQUEIAM, periodo__overlap=p,
         ).exclude(pk=self.pk)
@@ -85,6 +89,9 @@ class Reserva(models.Model):
     def aprovar(self, gestor):
         from . import servicos
         self._exigir(self.Status.PENDENTE)
+        if self.veiculo.em_manutencao:
+            raise ValidationError(
+                "Este veículo está em manutenção. Libere-o antes de aprovar a reserva.")
         self.status = self.Status.APROVADA
         self.decidido_por, self.decidido_em = gestor, timezone.now()
         try:

@@ -63,7 +63,7 @@ function horario(r) {
 }
 function rotuloChip(r, dia) {
   const quando = mesmoDia(new Date(r.inicio), dia) ? fmtHora(r.inicio) : 'Continua'
-  return `${quando} · ${r.solicitante_nome}`
+  return `${quando} · ${ehAdmin.value ? r.solicitante_nome : 'Reservado'}`
 }
 async function carregar() {
   if (!veiculoId.value) return
@@ -75,7 +75,7 @@ async function carregar() {
         veiculo: veiculoId.value,
         inicio: grade.value[0].toISOString(),
         fim: somarDias(grade.value[0], grade.value.length).toISOString(),
-        status: 'pendente,aprovada,em_uso',
+        status: ehAdmin.value ? 'pendente,aprovada,em_uso' : 'aprovada,em_uso',
       },
     })
   } catch (e) {
@@ -117,11 +117,14 @@ watch([veiculoId, mes], carregar)
   <div v-if="!veiculos.length && !erro" class="cartao cal-sem-veiculos"><strong>Nenhum veículo cadastrado</strong><p>Cadastre um veículo para consultar a disponibilidade da frota.</p></div>
 
   <template v-if="veiculoId">
+    <p v-if="veiculos.find(v => String(v.id) === veiculoId)?.em_manutencao" class="erro">
+      Este veículo está em manutenção e não aceita novas reservas<template v-if="veiculos.find(v => String(v.id) === veiculoId)?.motivo_manutencao">: {{ veiculos.find(v => String(v.id) === veiculoId).motivo_manutencao }}</template>.
+    </p>
     <section class="cal-resumo" aria-label="Resumo do mês">
       <div class="cal-resumo-veiculo"><span class="cal-resumo-icone">▣</span><span><small>VEÍCULO SELECIONADO</small><strong>{{ veiculos.find(v => String(v.id) === veiculoId)?.modelo }} <span>({{ veiculos.find(v => String(v.id) === veiculoId)?.placa }})</span></strong></span></div>
       <div class="cal-resumo-item"><small>RESERVAS NO MÊS</small><strong>{{ resumoMes.total }}</strong></div>
-      <div class="cal-resumo-item"><small>PENDENTES</small><strong>{{ resumoMes.pendentes }}</strong></div>
-      <div class="cal-resumo-item"><small>CONFIRMADAS</small><strong>{{ resumoMes.aprovadas + resumoMes.emUso }}</strong></div>
+      <div v-if="ehAdmin" class="cal-resumo-item"><small>PENDENTES</small><strong>{{ resumoMes.pendentes }}</strong></div>
+      <div v-if="ehAdmin" class="cal-resumo-item"><small>CONFIRMADAS</small><strong>{{ resumoMes.aprovadas + resumoMes.emUso }}</strong></div>
     </section>
 
     <div class="cal-controles">
@@ -145,7 +148,7 @@ watch([veiculoId, mes], carregar)
             'com-reserva': (porDia[chaveDia(dia)] || []).length,
           }]" :aria-label="`${fmtDiaLongo(dia)}, ${(porDia[chaveDia(dia)] || []).length} reservas`" :aria-pressed="mesmoDia(dia, selecionado)" @click="selecionado = new Date(dia)">
             <span class="cal-dia-topo"><span class="num">{{ dia.getDate() }}</span><span v-if="(porDia[chaveDia(dia)] || []).length" class="cal-qtd">{{ (porDia[chaveDia(dia)] || []).length }}</span></span>
-            <span v-for="r in (porDia[chaveDia(dia)] || []).slice(0, MAX_CHIPS)" :key="r.id" :class="['chip', r.status]">{{ rotuloChip(r, dia) }}</span>
+            <span v-for="r in (porDia[chaveDia(dia)] || []).slice(0, MAX_CHIPS)" :key="r.id" :class="['chip', ehAdmin ? r.status : 'reservado']">{{ rotuloChip(r, dia) }}</span>
             <span v-if="(porDia[chaveDia(dia)] || []).length > MAX_CHIPS" class="mais">+{{ (porDia[chaveDia(dia)] || []).length - MAX_CHIPS }} outras</span>
             <span v-if="!(porDia[chaveDia(dia)] || []).length && dia.getMonth() === mes.getMonth()" class="cal-dia-livre">Disponível</span>
           </button>
@@ -157,9 +160,11 @@ watch([veiculoId, mes], carregar)
         <div class="cal-detalhe-corpo">
           <div v-if="!doSelecionado.length" class="cal-dia-vazio"><span>✓</span><strong>Veículo disponível</strong><p>Nenhuma reserva identificada para esta data.</p></div>
           <div v-for="r in doSelecionado" :key="r.id" class="item-dia">
-            <div class="linha-info"><span class="hora">{{ horario(r) }}</span><span :class="['selo', r.status]">{{ ROTULO_STATUS[r.status] }}</span></div>
-            <strong class="cal-solicitante">{{ r.solicitante_nome }}</strong>
-            <div v-if="r.destino" class="pequeno">Destino: {{ r.destino }}</div>
+            <div class="linha-info"><span class="hora">{{ horario(r) }}</span><span v-if="ehAdmin" :class="['selo', r.status]">{{ ROTULO_STATUS[r.status] }}</span><span v-else class="selo reservado">Reservado</span></div>
+            <template v-if="ehAdmin">
+              <strong class="cal-solicitante">{{ r.solicitante_nome }}</strong>
+              <div v-if="r.destino" class="pequeno">Destino: {{ r.destino }}</div>
+            </template>
           </div>
         </div>
         <div class="cal-detalhe-acoes">
@@ -168,6 +173,6 @@ watch([veiculoId, mes], carregar)
         </div>
       </aside>
     </div>
-    <div class="cal-legenda"><strong>Legenda</strong><span><i class="pendente" /> Pendente</span><span><i class="aprovada" /> Aprovada</span><span><i class="em_uso" /> Em utilização</span><span><i class="livre" /> Disponível</span></div>
+    <div class="cal-legenda"><strong>Legenda</strong><template v-if="ehAdmin"><span><i class="pendente" /> Pendente</span><span><i class="aprovada" /> Aprovada</span><span><i class="em_uso" /> Em utilização</span></template><span v-else><i class="reservado" /> Reservado</span><span><i class="livre" /> Disponível</span></div>
   </template>
 </template>

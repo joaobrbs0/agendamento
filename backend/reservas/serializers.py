@@ -10,7 +10,8 @@ from .models import Reserva, Veiculo
 class VeiculoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Veiculo
-        fields = ["id", "placa", "modelo"]
+        fields = ["id", "placa", "modelo", "em_manutencao", "motivo_manutencao"]
+        read_only_fields = ["em_manutencao", "motivo_manutencao"]
         # A unicidade é checada em validate_placa, depois de normalizar o texto.
         extra_kwargs = {"placa": {"validators": []}}
 
@@ -50,6 +51,12 @@ class ReservaSerializer(serializers.ModelSerializer):
             "status", "motivo_recusa", "km_saida", "km_retorno", "criado_em",
         ]
 
+    def validate_veiculo(self, veiculo):
+        if veiculo.em_manutencao:
+            raise serializers.ValidationError(
+                "Este veículo está em manutenção e não pode ser reservado.")
+        return veiculo
+
     def get_veiculo_nome(self, r):
         return str(r.veiculo)
 
@@ -57,6 +64,15 @@ class ReservaSerializer(serializers.ModelSerializer):
         return r.solicitante.get_full_name() or r.solicitante.get_username()
 
     def to_representation(self, r):
+        request = self.context.get("request")
+        if (request is not None and not self.context.get("gestor")
+                and r.solicitante_id != request.user.id):
+            return {
+                "id": r.id,
+                "veiculo": r.veiculo_id,
+                "inicio": timezone.localtime(r.periodo.lower).isoformat(),
+                "fim": timezone.localtime(r.periodo.upper).isoformat(),
+            }
         dados = super().to_representation(r)
         dados["inicio"] = timezone.localtime(r.periodo.lower).isoformat()
         dados["fim"] = timezone.localtime(r.periodo.upper).isoformat()

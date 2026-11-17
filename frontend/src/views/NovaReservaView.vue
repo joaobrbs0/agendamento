@@ -50,7 +50,8 @@ onMounted(async () => {
   }
   try {
     veiculos.value = await api('/veiculos/')
-    if (veiculos.value.length) form.value.veiculo = String(veiculos.value[0].id)
+    const livre = veiculos.value.find(v => !v.em_manutencao)
+    if (livre) form.value.veiculo = String(livre.id)
   } catch (e) { erro.value = e.message }
 })
 watch(() => [form.value.veiculo, form.value.inicio, form.value.fim], verificarConflitos)
@@ -78,8 +79,8 @@ watch(() => [form.value.veiculo, form.value.inicio, form.value.fim], verificarCo
         <span>Veículo solicitado</span>
         <select v-model="form.veiculo">
           <option value="" disabled>Selecione um veículo</option>
-          <option v-for="v in veiculos" :key="v.id" :value="String(v.id)">
-            {{ v.modelo }} ({{ v.placa }})
+          <option v-for="v in veiculos" :key="v.id" :value="String(v.id)" :disabled="v.em_manutencao">
+            {{ v.modelo }} ({{ v.placa }}){{ v.em_manutencao ? ' — em manutenção' : '' }}
           </option>
         </select>
       </label>

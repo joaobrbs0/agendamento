@@ -25,7 +25,6 @@ body {
   color: var(--texto);
 }
 
-/* ---------- estrutura ---------- */
 .app {
   display: grid;
   grid-template-columns: var(--largura-lateral) minmax(0, 1fr);
@@ -113,7 +112,6 @@ body {
 h1 { font-size: 24px; margin: 0; color: var(--marinho); }
 h2 { font-size: 16px; margin: 0 0 8px; }
 
-/* ---------- componentes ---------- */
 .cartao {
   background: #fff;
   border: 1px solid var(--borda);
@@ -193,7 +191,6 @@ button.link { background: none; border: none; padding: 0; color: inherit; text-d
 .grade-cartoes { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
 .grade-cartoes .cartao { margin-bottom: 0; }
 
-/* ---------- painel do administrador ---------- */
 .estatisticas { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 14px; }
 .estat {
   display: block; text-decoration: none; color: inherit;
@@ -214,7 +211,6 @@ button.link { background: none; border: none; padding: 0; color: inherit; text-d
 .duas-colunas { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 14px; }
 .duas-colunas .cartao { margin-bottom: 0; }
 
-/* ---------- calendário ---------- */
 .cal { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 16px; align-items: start; }
 .cal-barra { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
 .cal-barra .mes { font-size: 20px; font-weight: 600; color: var(--marinho); min-width: 190px; }
@@ -253,6 +249,7 @@ button.cal-dia.selecionado { background: var(--azul-claro); box-shadow: inset 0 
 .chip.pendente { background: #fef9c3; color: #854d0e; border-left-color: #eab308; }
 .chip.aprovada { background: #dcfce7; color: #166534; border-left-color: #22c55e; }
 .chip.em_uso { background: #dbeafe; color: #1e40af; border-left-color: #3b82f6; }
+.chip.reservado { background: #e7eef4; color: #35536b; border-left-color: #6f91aa; }
 .mais { font-size: 11.5px; color: var(--cinza); padding-left: 4px; }
 
 .cal-legenda { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; font-size: 13px; color: var(--cinza); }
@@ -261,6 +258,7 @@ button.cal-dia.selecionado { background: var(--azul-claro); box-shadow: inset 0 
 .cal-legenda i.pendente { background: #eab308; }
 .cal-legenda i.aprovada { background: #22c55e; }
 .cal-legenda i.em_uso { background: #3b82f6; }
+.cal-legenda i.reservado { background: #6f91aa; }
 
 .cal-detalhe { position: sticky; top: calc(var(--altura-topo) + 20px); margin-bottom: 0; }
 .cal-detalhe h2 { text-transform: capitalize; font-size: 17px; }
@@ -270,7 +268,6 @@ button.cal-dia.selecionado { background: var(--azul-claro); box-shadow: inset 0 
 .item-dia .linha-info { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
 .item-dia .pequeno { margin-top: 2px; }
 
-/* ---------- login ---------- */
 .login-pagina { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
 .login-lado {
   background: linear-gradient(160deg, var(--marinho) 0%, var(--marinho-2) 100%);
@@ -297,7 +294,6 @@ button.cal-dia.selecionado { background: var(--azul-claro); box-shadow: inset 0 
 .login-caixa .cartao { padding: 22px; }
 .login-caixa button.entrar { width: 100%; margin-top: 4px; padding: 11px; }
 
-/* ---------- responsivo ---------- */
 .fundo-menu { display: none; }
 @media (max-width: 1100px) {
   .cal { grid-template-columns: minmax(0, 1fr); }
@@ -652,3 +648,4 @@ button.cal-dia:hover:not(:disabled) { background:#f5f8fa; }
  .form-grid .campo-largo { grid-column:auto; }
  .form-acoes { align-items:flex-start; flex-direction:column; }
 }
+.selo.reservado { background: #e7eef4; color: #35536b; }

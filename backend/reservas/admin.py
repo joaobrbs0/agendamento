@@ -6,7 +6,7 @@ from .models import Reserva, Veiculo
 
 @admin.register(Veiculo)
 class VeiculoAdmin(admin.ModelAdmin):
-    list_display = ("placa", "modelo", "ativo")
+    list_display = ("placa", "modelo", "ativo", "em_manutencao")
 
 
 @admin.register(Reserva)

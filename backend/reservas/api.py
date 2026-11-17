@@ -49,9 +49,58 @@ class EuView(APIView):
         })
 
 
-class VeiculoViewSet(viewsets.ReadOnlyModelViewSet):
+class VeiculoViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin,
+                     viewsets.ReadOnlyModelViewSet):
     queryset = Veiculo.objects.filter(ativo=True).order_by("modelo")
     serializer_class = VeiculoSerializer
+
+    def create(self, request, *args, **kwargs):
+        if not eh_gestor(request.user):
+            raise PermissionDenied("Você não tem permissão para cadastrar veículos.")
+        return super().create(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        if not eh_gestor(request.user):
+            raise PermissionDenied("Você não tem permissão para excluir veículos.")
+        veiculo = self.get_object()
+        # Reserva usa on_delete=PROTECT, então o veículo é desativado (exclusão lógica),
+        # preservando o histórico de reservas.
+        if Reserva.objects.filter(
+                veiculo=veiculo, status__in=["pendente", *BLOQUEIAM]).exists():
+            raise serializers.ValidationError(
+                "Este veículo possui reservas pendentes, aprovadas ou em uso. "
+                "Cancele ou conclua essas reservas antes de excluí-lo.")
+        veiculo.ativo = False
+        veiculo.save(update_fields=["ativo"])
+        return Response(status=204)
+
+    @action(detail=True, methods=["post"])
+    def manutencao(self, request, pk=None):
+        """Corpo: {"em_manutencao": true|false, "motivo": "texto opcional"}."""
+        if not eh_gestor(request.user):
+            raise PermissionDenied("Você não tem permissão para alterar a situação do veículo.")
+        veiculo = self.get_object()
+        entrar = request.data.get("em_manutencao")
+        if not isinstance(entrar, bool):
+            raise serializers.ValidationError({"em_manutencao": "Informe true ou false."})
+
+        afetadas = 0
+        if entrar:
+            if Reserva.objects.filter(veiculo=veiculo, status="em_uso").exists():
+                raise serializers.ValidationError(
+                    "O veículo está em uso. Registre a devolução antes de enviá-lo para manutenção.")
+            afetadas = Reserva.objects.filter(
+                veiculo=veiculo, status__in=["pendente", "aprovada"],
+                periodo__endswith__gt=timezone.now()).count()
+            veiculo.em_manutencao = True
+            veiculo.motivo_manutencao = str(request.data.get("motivo", "")).strip()[:200]
+        else:
+            veiculo.em_manutencao = False
+            veiculo.motivo_manutencao = ""
+        veiculo.save(update_fields=["em_manutencao", "motivo_manutencao"])
+        dados = self.get_serializer(veiculo).data
+        dados["reservas_afetadas"] = afetadas
+        return Response(dados)
 
 
 class ReservaViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
@@ -64,6 +113,11 @@ class ReservaViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
     ?inicio=...&fim=... (reservas que encostam nesse intervalo, ISO 8601)
     """
     serializer_class = ReservaSerializer
+
+    def get_serializer_context(self):
+        contexto = super().get_serializer_context()
+        contexto["gestor"] = eh_gestor(self.request.user)
+        return contexto
 
     def get_queryset(self):
         u = self.request.user

@@ -114,9 +114,9 @@ onMounted(carregar)
           <small>Placa: {{ v.placa }}</small>
           <small v-if="v.em_manutencao && v.motivo_manutencao">Motivo: {{ v.motivo_manutencao }}</small>
         </div>
-        <span :class="['frota-tag', { 'frota-tag-manutencao': v.em_manutencao }]">
-          {{ v.em_manutencao ? 'Em manutenção' : 'Disponível' }}
-        </span>
+         <span v-if="v.em_manutencao" class="frota-tag frota-tag-manutencao">
+            Em manutenção
+         </span>
         <button class="sec" :disabled="manutencaoId === v.id" @click="alternarManutencao(v)">
           {{ manutencaoId === v.id ? 'Salvando…' : (v.em_manutencao ? 'Liberar veículo' : 'Enviar p/ manutenção') }}
         </button>

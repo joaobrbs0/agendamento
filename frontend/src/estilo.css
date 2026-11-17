@@ -634,11 +634,12 @@ button.cal-dia:hover:not(:disabled) { background:#f5f8fa; }
 .reserva-card .acoes { padding:0 18px 16px; margin:0; }
 .estado-vazio { background:#fff; border:1px dashed #cbd5e1; border-radius:12px; padding:34px 20px; text-align:center; color:var(--cinza); }
 .estado-vazio strong { display:block; color:var(--marinho); margin-bottom:5px; }
-.frota-lista { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px; }
-.frota-item { display:flex; align-items:center; gap:13px; padding:15px; border:1px solid var(--borda); border-radius:10px; background:#fff; }
+.frota-lista { display:grid; grid-template-columns:1fr; gap:12px; }
+.frota-item { display:flex; align-items:center; flex-wrap:wrap; gap:13px; padding:15px; border:1px solid var(--borda); border-radius:10px; background:#fff; }
 .frota-icone { width:42px; height:42px; display:grid; place-items:center; border-radius:10px; background:#edf4fa; color:var(--marinho); flex:0 0 auto; }
 .frota-icone svg { width:22px; height:22px; }
-.frota-item .frota-info { min-width:0; flex:1; }
+.frota-item .frota-info { min-width:0; flex:1 1 160px; }
+.frota-item button { flex:0 0 auto; white-space:nowrap; }
 .frota-item strong { display:block; color:var(--marinho); font-size:14px; }
 .frota-item small { display:block; color:var(--cinza); font-size:12px; margin-top:3px; }
 .frota-tag { font-size:10px; color:#52677d; background:#f1f5f9; padding:4px 7px; border-radius:5px; text-transform:uppercase; letter-spacing:.04em; }
